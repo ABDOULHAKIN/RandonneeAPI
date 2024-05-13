@@ -1,0 +1,6 @@
+@NewZWalkAPI_HostAddress = http://localhost:5189
+
+GET {{NewZWalkAPI_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
