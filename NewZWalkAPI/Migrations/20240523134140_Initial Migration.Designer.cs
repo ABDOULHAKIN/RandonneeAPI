@@ -12,7 +12,7 @@ using NewZWalkAPI.Data;
 namespace NewZWalkAPI.Migrations
 {
     [DbContext(typeof(NZWalkDbContext))]
-    [Migration("20240512225931_Initial Migration")]
+    [Migration("20240523134140_Initial Migration")]
     partial class InitialMigration
     {
         /// <inheritdoc />
