@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using NewZWalkAPI.Data;
+using NewZWalkAPI.Models.DTO;
 
 namespace NewZWalkAPI.Controllers
 {
@@ -18,8 +19,24 @@ namespace NewZWalkAPI.Controllers
         [HttpGet]
         public IActionResult GetAll()
         {
-            var regions = dbContext.Regions.ToList();
-            return Ok(regions);
+            // Avoir les données provenant de SQL SERVER - Domains models
+            var regionsDomain = dbContext.Regions.ToList();
+            // Mapper le domain models à DTO
+            var regionsDto = new List<RegionDTO>();
+            foreach (var regionDomain in regionsDomain)
+            {
+                regionsDto.Add(new RegionDTO()
+                {
+                    Id = regionDomain.Id,
+                    Code = regionDomain.Code,
+                    Name = regionDomain.Name,
+                    RegionImageUrl = regionDomain.RegionImageUrl
+                });
+                
+            }
+
+            // Retourner le DTO
+            return Ok(regionsDto);
         }
 
         // GET REGIONS AVEC SON ID
@@ -29,14 +46,32 @@ namespace NewZWalkAPI.Controllers
         {
             // var region = dbContext.Regions.Find(id);
             // ou utiliser LINQ
-            var region = dbContext.Regions.FirstOrDefault(r => r.Id == id);
+            var regionDomain = dbContext.Regions.FirstOrDefault(r => r.Id == id);
 
-            if(region == null)
+            if(regionDomain == null)
             {
                 return NotFound();
             }
 
-            return Ok(region);
+            // Si ce n'est pas NULL, on va mapper/Conversion Region Domain Model en Region DTO
+            var regionsDto = new RegionDTO
+            {
+                Id = regionDomain.Id,
+                Code = regionDomain.Code,
+                Name = regionDomain.Name,
+                RegionImageUrl = regionDomain.RegionImageUrl
+            };
+
+            //Retourner le DTO à nos clients
+
+            return Ok(regionsDto);
+
+        }
+
+        // POST pour créer une nouvelle région
+        [HttpPost]
+        public IActionResult Create([FromBody] AddRegionRequestDTO addRegionRequestDTO)
+        {
 
         }
     }
