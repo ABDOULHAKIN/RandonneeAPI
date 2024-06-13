@@ -97,7 +97,7 @@ namespace NewZWalkAPI.Controllers
             return CreatedAtAction(nameof(GetById), new { id = regionDto.Id }, regionDto);
         }
 
-        //-----------------Update une region------------------//
+        //-----------------Update une region en fonction de son ID------------------//
         [HttpPut]
         [Route("{id:Guid}")]
         public IActionResult Update([FromRoute] Guid id, [FromBody] UpdateRegionRequestDTO updateRegionRequestDto)
