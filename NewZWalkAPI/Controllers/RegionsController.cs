@@ -44,11 +44,11 @@ namespace NewZWalkAPI.Controllers
         // GET REGIONS AVEC SON ID
         [HttpGet]
         [Route("{id:Guid}")]
-        public IActionResult GetById([FromRoute] Guid id)
+        public async Task<IActionResult> GetById([FromRoute] Guid id)
         {
             // var region = dbContext.Regions.Find(id);
             // ou utiliser LINQ
-            var regionDomain = dbContext.Regions.FirstOrDefault(r => r.Id == id);
+            var regionDomain = await dbContext.Regions.FirstOrDefaultAsync(r => r.Id == id);
 
             if(regionDomain == null)
             {
