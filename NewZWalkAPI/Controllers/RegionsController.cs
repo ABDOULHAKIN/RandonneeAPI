@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using NewZWalkAPI.Data;
 using NewZWalkAPI.Models.Domain;
 using NewZWalkAPI.Models.DTO;
@@ -18,10 +19,10 @@ namespace NewZWalkAPI.Controllers
 
         // GET ou RECUPERER TOUTES LES REGIONS
         [HttpGet]
-        public IActionResult GetAll()
+        public async Task<IActionResult> GetAll()
         {
             // Avoir les données provenant de SQL SERVER - Domains models
-            var regionsDomain = dbContext.Regions.ToList();
+            var regionsDomain = await dbContext.Regions.ToArrayAsync();
             // Mapper le domain models à DTO
             var regionsDto = new List<RegionDTO>();
             foreach (var regionDomain in regionsDomain)
