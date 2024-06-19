@@ -72,7 +72,7 @@ namespace NewZWalkAPI.Controllers
 
         //----------------- POST pour créer une nouvelle région------------------//
         [HttpPost]
-        public IActionResult Create([FromBody] AddRegionRequestDTO addRegionRequestDTO)
+        public async Task<IActionResult> Create([FromBody] AddRegionRequestDTO addRegionRequestDTO)
         {
             // Map DTO to Domain Model
             var regionDomainModel = new Region
@@ -83,8 +83,8 @@ namespace NewZWalkAPI.Controllers
             };
 
             // Utiliser le Domain Model pour créer une région
-            dbContext.Regions.Add(regionDomainModel);
-            dbContext.SaveChanges(); // Pour enregistrer dans la BDD
+            await dbContext.Regions.AddAsync(regionDomainModel);
+            await dbContext.SaveChangesAsync(); // Pour enregistrer dans la BDD
 
             // Map Domain model retourne to DTO
             var regionDto = new RegionDTO
@@ -101,10 +101,10 @@ namespace NewZWalkAPI.Controllers
         //-----------------Update une region en fonction de son ID------------------//
         [HttpPut]
         [Route("{id:Guid}")]
-        public IActionResult Update([FromRoute] Guid id, [FromBody] UpdateRegionRequestDTO updateRegionRequestDto)
+        public async Task<IActionResult> Update([FromRoute] Guid id, [FromBody] UpdateRegionRequestDTO updateRegionRequestDto)
         {
             // Verifier si la région existe
-            var regionDomainModel = dbContext.Regions.FirstOrDefault(x => x.Id == id);
+            var regionDomainModel = await dbContext.Regions.FirstOrDefaultAsync(x => x.Id == id);
 
             if(regionDomainModel == null)
             {
@@ -116,7 +116,7 @@ namespace NewZWalkAPI.Controllers
             regionDomainModel.Name = updateRegionRequestDto.Name;
             regionDomainModel.RegionImageUrl = updateRegionRequestDto.RegionImageUrl;
 
-            dbContext.SaveChanges();
+            await dbContext.SaveChangesAsync();
 
             // Conversion de Domain Model à DTO
             var regionDto = new Region
