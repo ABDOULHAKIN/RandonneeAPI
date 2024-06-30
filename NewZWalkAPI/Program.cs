@@ -1,5 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using NewZWalkAPI.Data;
+using NewZWalkAPI.Repositories;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -15,6 +16,8 @@ builder.Services.AddSwaggerGen();
 builder.Services.AddDbContext<NZWalkDbContext>(options =>
 options.UseSqlServer(builder.Configuration.GetConnectionString("NZWalkConnectionString")));
 
+// On injecter le Repository venant de SQLRegionRepository
+builder.Services.AddScoped<IRegionRepository, SQLRegionRepository>();
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.

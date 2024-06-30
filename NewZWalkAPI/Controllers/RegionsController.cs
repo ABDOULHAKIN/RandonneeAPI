@@ -4,6 +4,7 @@ using Microsoft.EntityFrameworkCore;
 using NewZWalkAPI.Data;
 using NewZWalkAPI.Models.Domain;
 using NewZWalkAPI.Models.DTO;
+using NewZWalkAPI.Repositories;
 
 namespace NewZWalkAPI.Controllers
 {
@@ -12,7 +13,7 @@ namespace NewZWalkAPI.Controllers
     public class RegionsController : ControllerBase
     {
         private readonly NZWalkDbContext dbContext;
-        public RegionsController(NZWalkDbContext dbContext)
+        public RegionsController(NZWalkDbContext dbContext, IRegionRepository regionRepository)
         {
             this.dbContext = dbContext;
         }
