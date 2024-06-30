@@ -13,17 +13,20 @@ namespace NewZWalkAPI.Controllers
     public class RegionsController : ControllerBase
     {
         private readonly NZWalkDbContext dbContext;
+        private readonly IRegionRepository regionRepository;
+
         public RegionsController(NZWalkDbContext dbContext, IRegionRepository regionRepository)
         {
             this.dbContext = dbContext;
+            this.regionRepository = regionRepository;
         }
 
         // GET ou RECUPERER TOUTES LES REGIONS
         [HttpGet]
         public async Task<IActionResult> GetAll()
         {
-            // Avoir les données provenant de SQL SERVER - Domains models
-            var regionsDomain = await dbContext.Regions.ToArrayAsync();
+            // Avoir les données provenant de SQL SERVER - comme c'est la responsabilité de RegionRepository, on interroge
+            var regionsDomain = await regionRepository.GetAllAsync();
             // Mapper le domain models à DTO
             var regionsDto = new List<RegionDTO>();
             foreach (var regionDomain in regionsDomain)
