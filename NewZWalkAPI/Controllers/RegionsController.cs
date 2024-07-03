@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Http;
+﻿using AutoMapper;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using NewZWalkAPI.Data;
@@ -14,21 +15,23 @@ namespace NewZWalkAPI.Controllers
     {
         private readonly NZWalkDbContext dbContext;
         private readonly IRegionRepository regionRepository;
+        private readonly IMapper mapper;
 
-        public RegionsController(NZWalkDbContext dbContext, IRegionRepository regionRepository)
+        public RegionsController(NZWalkDbContext dbContext, IRegionRepository regionRepository, IMapper mapper)
         {
             this.dbContext = dbContext;
             this.regionRepository = regionRepository;
+            this.mapper = mapper;
         }
 
         // GET ou RECUPERER TOUTES LES REGIONS
         [HttpGet]
         public async Task<IActionResult> GetAll()
         {
-            // Avoir les données provenant de SQL SERVER - comme c'est la responsabilité de RegionRepository, on interroge
+            // Avoir les données provenant de SQL SERVER - comme c'est la responsabilité de RegionRepository, on l'interroge
             var regionsDomain = await regionRepository.GetAllAsync();
             // Mapper le domain models à DTO
-            var regionsDto = new List<RegionDTO>();
+            /*var regionsDto = new List<RegionDTO>();
             foreach (var regionDomain in regionsDomain)
             {
                 regionsDto.Add(new RegionDTO()
@@ -39,7 +42,10 @@ namespace NewZWalkAPI.Controllers
                     RegionImageUrl = regionDomain.RegionImageUrl
                 });
                 
-            }
+            }*/
+            
+            // Map Domain Model to DTO
+            var regionsDto = mapper.Map<List<RegionDTO>>(regionsDomain);
 
             // Retourner le DTO
             return Ok(regionsDto);
@@ -52,25 +58,17 @@ namespace NewZWalkAPI.Controllers
         {
             // var region = dbContext.Regions.Find(id);
             // ou utiliser LINQ
-            var regionDomain = await dbContext.Regions.FirstOrDefaultAsync(r => r.Id == id);
+            var regionDomain = await regionRepository.GetByIdAsync(id);
 
             if(regionDomain == null)
             {
                 return NotFound();
             }
 
-            // Si ce n'est pas NULL, on va mapper/Conversion Region Domain Model en Region DTO
-            var regionsDto = new RegionDTO
-            {
-                Id = regionDomain.Id,
-                Code = regionDomain.Code,
-                Name = regionDomain.Name,
-                RegionImageUrl = regionDomain.RegionImageUrl
-            };
 
             //Retourner le DTO à nos clients
 
-            return Ok(regionsDto);
+            return Ok(mapper.Map<RegionDTO>(regionDomain));
 
         }
 
@@ -79,25 +77,13 @@ namespace NewZWalkAPI.Controllers
         public async Task<IActionResult> Create([FromBody] AddRegionRequestDTO addRegionRequestDTO)
         {
             // Map DTO to Domain Model
-            var regionDomainModel = new Region
-            {
-                Code = addRegionRequestDTO.Code,
-                Name = addRegionRequestDTO.Name,
-                RegionImageUrl = addRegionRequestDTO.RegionImageUrl
-            };
+            var regionDomainModel = mapper.Map<Region>(addRegionRequestDTO);
 
-            // Utiliser le Domain Model pour créer une région
-            await dbContext.Regions.AddAsync(regionDomainModel);
-            await dbContext.SaveChangesAsync(); // Pour enregistrer dans la BDD
+            // A la place d'utiliser le Domain Model, on utilisera le Repository
+            regionDomainModel = await regionRepository.CreateAsync(regionDomainModel);
 
             // Map Domain model retourne to DTO
-            var regionDto = new RegionDTO
-            {
-                Id = regionDomainModel.Id,
-                Code = regionDomainModel.Code,
-                Name = regionDomainModel.Name,
-                RegionImageUrl = regionDomainModel.RegionImageUrl
-            };
+            var regionDto = mapper.Map<RegionDTO> (regionDomainModel);
 
             return CreatedAtAction(nameof(GetById), new { id = regionDto.Id }, regionDto);
         }
@@ -107,29 +93,20 @@ namespace NewZWalkAPI.Controllers
         [Route("{id:Guid}")]
         public async Task<IActionResult> Update([FromRoute] Guid id, [FromBody] UpdateRegionRequestDTO updateRegionRequestDto)
         {
-            // Verifier si la région existe
-            var regionDomainModel = await dbContext.Regions.FirstOrDefaultAsync(x => x.Id == id);
+            // Convertir DTO en Domain Model
+            var regionDomainModel = mapper.Map<Region>(updateRegionRequestDto);
+
+            // Pour certifier de prendre ce qui vont venir de repository
+
+            regionDomainModel =  await regionRepository.UpdateAsync(id, regionDomainModel);
 
             if(regionDomainModel == null)
             {
                 return NotFound();
             }
 
-            // Map DTO to DomainModel
-            regionDomainModel.Code = updateRegionRequestDto.Code;
-            regionDomainModel.Name = updateRegionRequestDto.Name;
-            regionDomainModel.RegionImageUrl = updateRegionRequestDto.RegionImageUrl;
-
-            await dbContext.SaveChangesAsync();
-
             // Conversion de Domain Model à DTO
-            var regionDto = new Region
-            {
-                Id = regionDomainModel.Id,
-                Code = regionDomainModel.Code,
-                Name = regionDomainModel.Name,
-                RegionImageUrl = regionDomainModel.RegionImageUrl
-            };
+            var regionDto = mapper.Map<RegionDTO>(regionDomainModel);
 
             return Ok(regionDto);
         }
@@ -139,26 +116,17 @@ namespace NewZWalkAPI.Controllers
         [Route("{id:Guid}")]
         public async Task<IActionResult> Delete([FromRoute] Guid id)
         {
-            var regionDomainModel = await dbContext.Regions.FirstOrDefaultAsync(x => x.Id == id);
+            // On appelle le repository pour interroger les données de la BDD
+            var regionDomainModel = await regionRepository.DeleteAsync(id);
 
             if(regionDomainModel == null)
             {
                 return NotFound();
-            }
-
-            // Supprimer la région
-            dbContext.Regions.Remove(regionDomainModel);
-            await dbContext.SaveChangesAsync();
+            }        
 
             // Retour des regions 
             // Map Domain Model à DTO
-            var regionDto = new RegionDTO
-            {
-                Id = regionDomainModel.Id,
-                Code = regionDomainModel.Code,
-                Name = regionDomainModel.Name,
-                RegionImageUrl = regionDomainModel.RegionImageUrl
-            };
+            var regionDto = mapper.Map<RegionDTO>(regionDomainModel);
 
             return Ok(regionDto);
 

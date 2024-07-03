@@ -1,5 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using NewZWalkAPI.Data;
+using NewZWalkAPI.Mappings;
 using NewZWalkAPI.Repositories;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -18,6 +19,9 @@ options.UseSqlServer(builder.Configuration.GetConnectionString("NZWalkConnection
 
 // On injecter le Repository venant de SQLRegionRepository
 builder.Services.AddScoped<IRegionRepository, SQLRegionRepository>();
+
+// Injecte l'automapper dans l'app
+builder.Services.AddAutoMapper(typeof(AutoMapperProfiles));
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
